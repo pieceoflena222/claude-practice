@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>나는 어떤 마케터일까? — 3분 성향 테스트</title>
+<style>
+  :root{
+    --green:#1E8F5F;
+    --green-dark:#166B47;
+    --green-light:#E7F5EE;
+    --magenta:#D6006D;
+    --magenta-dark:#AA0057;
+    --magenta-light:#FCE6F1;
+    --text:#1A1A1A;
+    --sub:#6B6B6B;
+    --border:#EAEAEA;
+    --bg:#FFFFFF;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  #app{
+    max-width:430px;
+    min-width:0;
+    width:100%;
+    margin:0 auto;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    padding:20px 20px 40px;
+    position:relative;
+  }
+  /* progress bar */
+  .progress-wrap{
+    display:none;
+    align-items:center;
+    gap:10px;
+    margin-bottom:24px;
+  }
+  .progress-wrap.show{display:flex;}
+  .progress-track{
+    flex:1;
+    height:8px;
+    background:var(--border);
+    border-radius:999px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,var(--green),var(--magenta));
+    border-radius:999px;
+    transition:width .35s ease;
+  }
+  .progress-label{
+    font-size:12.5px;
+    color:var(--sub);
+    font-weight:600;
+    white-space:nowrap;
+    min-width:34px;
+    text-align:right;
+  }
+
+  .screen{
+    display:none;
+    flex-direction:column;
+    flex:1;
+  }
+  .screen.active{
+    display:flex;
+    animation:fadeSlideIn .38s ease;
+  }
+  @keyframes fadeSlideIn{
+    from{opacity:0; transform:translateY(10px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+
+  /* Intro */
+  .intro-badge{
+    align-self:flex-start;
+    background:var(--magenta-light);
+    color:var(--magenta-dark);
+    font-size:13px;
+    font-weight:700;
+    padding:6px 12px;
+    border-radius:999px;
+    margin-bottom:18px;
+  }
+  .intro-emoji{font-size:52px; margin-bottom:14px; line-height:1;}
+  h1.intro-title{
+    font-size:26px;
+    font-weight:800;
+    line-height:1.35;
+    margin:0 0 12px;
+    letter-spacing:-0.3px;
+  }
+  h1.intro-title .accent{color:var(--green);}
+  .intro-sub{
+    font-size:15px;
+    color:var(--sub);
+    line-height:1.6;
+    margin:0 0 32px;
+  }
+  .intro-meta{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    background:var(--green-light);
+    border-radius:16px;
+    padding:16px 18px;
+    margin-bottom:36px;
+  }
+  .intro-meta-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:13.5px;
+    color:var(--green-dark);
+    font-weight:600;
+  }
+  .intro-meta-row .dot{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--green);
+    flex-shrink:0;
+  }
+  .spacer{flex:1;}
+
+  /* Buttons */
+  .btn{
+    display:block;
+    width:100%;
+    border:none;
+    border-radius:16px;
+    padding:18px 20px;
+    font-size:16.5px;
+    font-weight:700;
+    cursor:pointer;
+    text-align:center;
+    font-family:inherit;
+    transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+  }
+  .btn:active{transform:scale(0.98);}
+  .btn-primary{
+    background:linear-gradient(90deg,var(--green),var(--magenta));
+    color:#fff;
+    box-shadow:0 8px 20px -8px rgba(214,0,109,0.45);
+  }
+  .btn-ghost{
+    background:#fff;
+    color:var(--green-dark);
+    border:2px solid var(--green);
+  }
+
+  /* Question header */
+  .q-kicker{
+    font-size:13px;
+    font-weight:700;
+    color:var(--magenta);
+    margin-bottom:8px;
+  }
+  .q-title{
+    font-size:20px;
+    font-weight:800;
+    line-height:1.45;
+    margin:0 0 24px;
+    letter-spacing:-0.2px;
+  }
+
+  /* Options */
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .option{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    width:100%;
+    text-align:left;
+    background:#fff;
+    border:2px solid var(--border);
+    border-radius:16px;
+    padding:16px 16px;
+    font-size:15px;
+    font-weight:600;
+    color:var(--text);
+    cursor:pointer;
+    font-family:inherit;
+    line-height:1.5;
+    transition:border-color .15s ease, background .15s ease, transform .12s ease;
+  }
+  .option:active{transform:scale(0.98);}
+  .option .opt-letter{
+    flex-shrink:0;
+    width:30px;
+    height:30px;
+    border-radius:10px;
+    background:var(--green-light);
+    color:var(--green-dark);
+    font-weight:800;
+    font-size:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .option.selected{
+    border-color:var(--magenta);
+    background:var(--magenta-light);
+  }
+  .option.selected .opt-letter{
+    background:var(--magenta);
+    color:#fff;
+  }
+
+  /* Track scale options */
+  .scale-options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .scale-option{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    width:100%;
+    background:#fff;
+    border:2px solid var(--border);
+    border-radius:16px;
+    padding:16px 18px;
+    font-size:15.5px;
+    font-weight:700;
+    cursor:pointer;
+    font-family:inherit;
+    color:var(--text);
+    transition:border-color .15s ease, background .15s ease, transform .12s ease;
+  }
+  .scale-option:active{transform:scale(0.98);}
+  .scale-option .scale-bar{
+    flex-shrink:0;
+    width:70px;
+    height:8px;
+    border-radius:999px;
+    background:var(--border);
+    position:relative;
+    overflow:hidden;
+    margin-left:14px;
+  }
+  .scale-option .scale-bar i{
+    position:absolute;
+    top:0;left:0;bottom:0;
+    background:linear-gradient(90deg,var(--green),var(--magenta));
+    border-radius:999px;
+  }
+  .scale-option.selected{
+    border-color:var(--green);
+    background:var(--green-light);
+  }
+
+  .q-footnote{
+    margin-top:18px;
+    font-size:12.5px;
+    color:var(--sub);
+    text-align:center;
+  }
+
+  /* Result */
+  .result-hero{
+    text-align:center;
+    padding:6px 0 22px;
+  }
+  .result-eyebrow{
+    font-size:13px;
+    font-weight:700;
+    color:var(--sub);
+    margin-bottom:10px;
+  }
+  .result-track{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:var(--green-light);
+    color:var(--green-dark);
+    font-weight:800;
+    font-size:14px;
+    padding:8px 14px;
+    border-radius:999px;
+    margin-bottom:14px;
+  }
+  .result-title{
+    font-size:24px;
+    font-weight:800;
+    line-height:1.4;
+    margin:0;
+    letter-spacing:-0.3px;
+  }
+  .result-title .type-name{color:var(--magenta);}
+  .result-card{
+    background:#fff;
+    border:2px solid var(--border);
+    border-radius:22px;
+    padding:26px 22px 24px;
+    margin-top:6px;
+    box-shadow:0 14px 34px -22px rgba(0,0,0,0.25);
+  }
+  .result-card-emoji{font-size:44px; margin-bottom:10px; line-height:1;}
+  .result-card-type{
+    font-size:12.5px;
+    font-weight:800;
+    color:var(--magenta);
+    letter-spacing:0.3px;
+    margin-bottom:6px;
+  }
+  .result-card-desc{
+    font-size:15.5px;
+    font-weight:600;
+    line-height:1.6;
+    margin:0 0 20px;
+  }
+  .result-strengths{
+    list-style:none;
+    margin:0 0 20px;
+    padding:0;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .result-strengths li{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    font-size:14.5px;
+    line-height:1.55;
+    color:var(--text);
+  }
+  .result-strengths li .chk{
+    flex-shrink:0;
+    width:22px;height:22px;
+    border-radius:7px;
+    background:var(--green);
+    color:#fff;
+    font-size:12px;
+    font-weight:800;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-top:1px;
+  }
+  .result-tip{
+    background:var(--magenta-light);
+    border-radius:14px;
+    padding:14px 16px;
+    font-size:13.5px;
+    line-height:1.6;
+    color:var(--magenta-dark);
+    font-weight:600;
+  }
+  .result-tip b{font-weight:800;}
+  .result-bars{
+    margin-top:22px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .result-bar-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:12px;
+    color:var(--sub);
+    font-weight:700;
+  }
+  .result-bar-label{width:64px; flex-shrink:0;}
+  .result-bar-track{
+    flex:1;
+    height:7px;
+    background:var(--border);
+    border-radius:999px;
+    overflow:hidden;
+  }
+  .result-bar-fill{
+    height:100%;
+    border-radius:999px;
+    background:linear-gradient(90deg,var(--green),var(--magenta));
+  }
+  .result-bar-pct{width:32px; text-align:right; flex-shrink:0; color:var(--text);}
+
+  .result-actions{
+    margin-top:28px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  @media (min-width:431px){
+    body{background:var(--green-light);}
+    #app{
+      margin:32px auto;
+      min-height:calc(100vh - 64px);
+      border-radius:28px;
+      box-shadow:0 20px 60px -30px rgba(0,0,0,0.3);
+      background:#fff;
+    }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0/8</div>
+  </div>
+
+  <!-- Screen 0: Intro -->
+  <section class="screen active" id="screen-intro">
+    <div class="intro-badge">AI 마케팅 교육 · 오프닝 아이스브레이킹</div>
+    <div class="intro-emoji">🎯</div>
+    <h1 class="intro-title">나는 어떤 마케터일까?<br><span class="accent">3분</span> 성향 테스트</h1>
+    <p class="intro-sub">딱딱한 자기소개는 이제 그만! 일상 속 상황 몇 가지만 골라보면<br>오늘 나의 마케터 유형이 짠 하고 나와요.</p>
+    <div class="intro-meta">
+      <div class="intro-meta-row"><span class="dot"></span>총 8개 질문 · 3~5분 소요</div>
+      <div class="intro-meta-row"><span class="dot"></span>정답은 없어요, 끌리는 대로 선택!</div>
+      <div class="intro-meta-row"><span class="dot"></span>결과는 오늘 실습 트랙 편성에도 참고돼요</div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn btn-primary" id="startBtn">시작하기</button>
+  </section>
+
+  <!-- Screen 1: Track question -->
+  <section class="screen" id="screen-track">
+    <div class="q-kicker">TRACK CHECK</div>
+    <h2 class="q-title">오늘 나는 창업 쪽에 더 끌리나요,<br>취업 쪽에 더 끌리나요?</h2>
+    <div class="scale-options" id="scaleOptions"></div>
+    <p class="q-footnote">지금 끌리는 쪽으로 편하게 골라주세요</p>
+  </section>
+
+  <!-- Screen 2: Type questions (dynamic) -->
+  <section class="screen" id="screen-question">
+    <div class="q-kicker" id="qKicker">SITUATION 1</div>
+    <h2 class="q-title" id="qTitle"></h2>
+    <div class="options" id="qOptions"></div>
+  </section>
+
+  <!-- Screen 3: Result -->
+  <section class="screen" id="screen-result">
+    <div class="result-hero">
+      <div class="result-eyebrow">테스트 결과</div>
+      <div class="result-track" id="resultTrack">창업 성향 00%</div>
+      <h2 class="result-title">당신은<br><span class="type-name" id="resultTypeName">유형</span>입니다</h2>
+    </div>
+
+    <div class="result-card">
+      <div class="result-card-emoji" id="resultEmoji">✨</div>
+      <div class="result-card-type" id="resultCardType">TYPE</div>
+      <p class="result-card-desc" id="resultDesc"></p>
+      <ul class="result-strengths" id="resultStrengths"></ul>
+      <div class="result-tip" id="resultTip"></div>
+
+      <div class="result-bars">
+        <div class="result-bar-row">
+          <div class="result-bar-label">창업 성향</div>
+          <div class="result-bar-track"><div class="result-bar-fill" id="barStartup" style="width:0%"></div></div>
+          <div class="result-bar-pct" id="pctStartup">0%</div>
+        </div>
+        <div class="result-bar-row">
+          <div class="result-bar-label">취업 성향</div>
+          <div class="result-bar-track"><div class="result-bar-fill" id="barJob" style="width:0%"></div></div>
+          <div class="result-bar-pct" id="pctJob">0%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn btn-ghost" id="restartBtn">다시 하기</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  // ---------- Data ----------
+  var trackSteps = [
+    { label: "완전 창업", startupPct: 90 },
+    { label: "약간 창업", startupPct: 70 },
+    { label: "반반",     startupPct: 50 },
+    { label: "약간 취업", startupPct: 30 },
+    { label: "완전 취업", startupPct: 10 }
+  ];
+
+  var typeMeta = {
+    content: {
+      name: "콘텐츠형 (스토리텔러)",
+      emoji: "🎨",
+      label: "CONTENT TYPE",
+      desc: "감성적인 표현과 스토리로 사람들의 마음을 움직이는 당신은 콘텐츠형 스토리텔러예요.",
+      strengths: [
+        "공감가는 스토리와 문장으로 사람들의 마음을 사로잡아요",
+        "감각적인 비주얼과 톤앤매너를 빠르게 캐치해요",
+        "SNS·콘텐츠 트렌드에 민감하게 반응해요"
+      ],
+      tip: "오늘 <b>콘텐츠·카피 실습</b>에서 특히 두각을 나타낼 거예요. 감성적인 문구와 이미지로 브랜드 스토리를 만드는 순간에 집중해보세요!"
+    },
+    research: {
+      name: "리서치형 (트렌드헌터)",
+      emoji: "🔍",
+      label: "RESEARCH TYPE",
+      desc: "궁금한 건 끝까지 파고드는 당신은 리서치형 트렌드헌터예요.",
+      strengths: [
+        "정보를 빠르게 모으고 비교·분석하는 능력이 뛰어나요",
+        "데이터와 근거를 바탕으로 판단해요",
+        "트렌드와 경쟁 상황을 객관적으로 파악해요"
+      ],
+      tip: "오늘 <b>트렌드·시장 리서치 실습</b>에서 특히 두각을 나타낼 거예요. 데이터로 인사이트를 뽑아내는 순간에 집중해보세요!"
+    },
+    relation: {
+      name: "관계형 (커넥터)",
+      emoji: "🤝",
+      label: "RELATION TYPE",
+      desc: "사람과 사람을 잇는 힘이 강한 당신은 관계형 커넥터예요.",
+      strengths: [
+        "사람들과 빠르게 친해지고 신뢰를 쌓아요",
+        "설득력 있는 말로 상대방의 마음을 움직여요",
+        "입소문과 네트워크를 활용하는 데 능숙해요"
+      ],
+      tip: "오늘 <b>고객 소통·설득 실습</b>에서 특히 두각을 나타낼 거예요. 직접 사람을 만나 이야기하는 순간에 집중해보세요!"
+    },
+    strategy: {
+      name: "전략형 (플래너)",
+      emoji: "🧭",
+      label: "STRATEGY TYPE",
+      desc: "큰 그림을 보고 구조를 짜는 당신은 전략형 플래너예요.",
+      strengths: [
+        "목표에 맞춰 우선순위와 일정을 체계적으로 설계해요",
+        "예산과 리소스를 효율적으로 배분해요",
+        "전체 흐름을 조율하는 기획력이 뛰어나요"
+      ],
+      tip: "오늘 <b>마케팅 전략·기획 실습</b>에서 특히 두각을 나타낼 거예요. 목표와 계획을 구조화하는 순간에 집중해보세요!"
+    }
+  };
+
+  var typeOrder = ["content", "research", "relation", "strategy"];
+
+  var questions = [
+    {
+      title: "새로 생긴 카페, 내가 사람들에게 알린다면?",
+      options: [
+        { text: "인스타에 예쁜 사진이랑 감성 글 올리기", type: "content" },
+        { text: "리뷰 다 찾아보고 비교 분석해서 정리하기", type: "research" },
+        { text: "친구들 직접 데려가서 입소문 내기", type: "relation" },
+        { text: "오픈 이벤트·할인 전략부터 짜기", type: "strategy" }
+      ]
+    },
+    {
+      title: "친구가 유튜브 채널을 새로 시작한다며 도와달라고 한다면?",
+      options: [
+        { text: "썸네일이랑 제목부터 감성 있게 뽑아준다", type: "content" },
+        { text: "비슷한 채널들 벤치마킹해서 데이터로 분석해준다", type: "research" },
+        { text: "주변 사람들한테 직접 구독 눌러달라고 홍보한다", type: "relation" },
+        { text: "업로드 요일·시리즈 기획 등 운영 전략부터 짜준다", type: "strategy" }
+      ]
+    },
+    {
+      title: "당근마켓에 안 쓰는 물건을 올린다면?",
+      options: [
+        { text: "감성적인 설명글과 예쁜 사진으로 올린다", type: "content" },
+        { text: "비슷한 물건 시세 다 찾아보고 최적가를 매긴다", type: "research" },
+        { text: "채팅으로 적극 소통하며 신뢰를 쌓아서 판다", type: "relation" },
+        { text: "어떤 시간대·요일에 올려야 잘 팔릴지부터 계획한다", type: "strategy" }
+      ]
+    },
+    {
+      title: "새 학기 동아리원 모집 포스터를 만든다면?",
+      options: [
+        { text: "감성 문구와 예쁜 디자인으로 눈길을 끈다", type: "content" },
+        { text: "작년 모집 데이터 보고 효과적이었던 문구를 분석한다", type: "research" },
+        { text: "아는 후배들 직접 찾아가서 설득한다", type: "relation" },
+        { text: "목표 인원, 채널별 홍보 일정표부터 짠다", type: "strategy" }
+      ]
+    },
+    {
+      title: "아르바이트 면접에서 '본인을 어떻게 어필할 것인가' 질문을 받는다면?",
+      options: [
+        { text: "나만의 스토리를 감성적으로 풀어서 얘기한다", type: "content" },
+        { text: "가게 특징과 경쟁 매장을 미리 조사해서 어필한다", type: "research" },
+        { text: "밝은 첫인상과 친화력으로 면접관과 친해진다", type: "relation" },
+        { text: "내 강점을 3가지로 구조화해서 논리적으로 설명한다", type: "strategy" }
+      ]
+    },
+    {
+      title: "편의점에서 신상 음료를 발견했다면?",
+      options: [
+        { text: "바로 사진 찍어서 감성 후기로 SNS에 올린다", type: "content" },
+        { text: "성분표랑 리뷰 검색해서 다른 제품과 비교해본다", type: "research" },
+        { text: "친구들 불러서 같이 먹어보고 반응을 살핀다", type: "relation" },
+        { text: "매대 위치·가격이면 잘 팔릴지 생각해본다", type: "strategy" }
+      ]
+    },
+    {
+      title: "동아리 MT 장소를 정해야 한다면?",
+      options: [
+        { text: "사진 예쁘게 나올 것 같은 감성 숙소부터 찾아본다", type: "content" },
+        { text: "후기·가격 비교표를 만들어서 꼼꼼히 분석한다", type: "research" },
+        { text: "다들 의견 물어보러 한 명씩 직접 연락 돌린다", type: "relation" },
+        { text: "예산·일정·이동수단까지 전체 계획표부터 짠다", type: "strategy" }
+      ]
+    }
+  ];
+
+  var totalSteps = 1 + questions.length; // track + type questions
+
+  // ---------- State ----------
+  var state = {
+    step: 0, // 0 intro, 1 track, 2..(1+n) questions, last = result
+    trackIndex: null,
+    typeAnswers: []
+  };
+
+  // ---------- Elements ----------
+  var screens = {
+    intro: document.getElementById("screen-intro"),
+    track: document.getElementById("screen-track"),
+    question: document.getElementById("screen-question"),
+    result: document.getElementById("screen-result")
+  };
+  var progressWrap = document.getElementById("progressWrap");
+  var progressFill = document.getElementById("progressFill");
+  var progressLabel = document.getElementById("progressLabel");
+  var scaleOptionsEl = document.getElementById("scaleOptions");
+  var qKicker = document.getElementById("qKicker");
+  var qTitle = document.getElementById("qTitle");
+  var qOptions = document.getElementById("qOptions");
+
+  function showScreen(name){
+    Object.keys(screens).forEach(function(key){
+      screens[key].classList.remove("active");
+    });
+    screens[name].classList.add("active");
+  }
+
+  function updateProgress(currentStepNumber){
+    if(currentStepNumber <= 0 || currentStepNumber > totalSteps){
+      progressWrap.classList.remove("show");
+      return;
+    }
+    progressWrap.classList.add("show");
+    var pct = Math.round((currentStepNumber / totalSteps) * 100);
+    progressFill.style.width = pct + "%";
+    progressLabel.textContent = currentStepNumber + "/" + totalSteps;
+  }
+
+  // ---------- Intro ----------
+  document.getElementById("startBtn").addEventListener("click", function(){
+    renderTrackScreen();
+    showScreen("track");
+    updateProgress(1);
+  });
+
+  // ---------- Track screen ----------
+  function renderTrackScreen(){
+    scaleOptionsEl.innerHTML = "";
+    trackSteps.forEach(function(step, idx){
+      var btn = document.createElement("button");
+      btn.className = "scale-option";
+      btn.type = "button";
+
+      var labelSpan = document.createElement("span");
+      labelSpan.textContent = step.label;
+      btn.appendChild(labelSpan);
+
+      var bar = document.createElement("span");
+      bar.className = "scale-bar";
+      var fill = document.createElement("i");
+      fill.style.width = step.startupPct + "%";
+      bar.appendChild(fill);
+      btn.appendChild(bar);
+
+      btn.addEventListener("click", function(){
+        state.trackIndex = idx;
+        Array.prototype.forEach.call(scaleOptionsEl.children, function(el){
+          el.classList.remove("selected");
+        });
+        btn.classList.add("selected");
+        setTimeout(function(){
+          startQuestions();
+        }, 260);
+      });
+
+      scaleOptionsEl.appendChild(btn);
+    });
+  }
+
+  // ---------- Type questions ----------
+  var currentQuestionIdx = 0;
+
+  function startQuestions(){
+    currentQuestionIdx = 0;
+    state.typeAnswers = [];
+    renderQuestion();
+    showScreen("question");
+  }
+
+  function renderQuestion(){
+    var q = questions[currentQuestionIdx];
+    qKicker.textContent = "SITUATION " + (currentQuestionIdx + 1) + " / " + questions.length;
+    qTitle.textContent = q.title;
+    qOptions.innerHTML = "";
+
+    var letters = ["A", "B", "C", "D"];
+    q.options.forEach(function(opt, idx){
+      var btn = document.createElement("button");
+      btn.className = "option";
+      btn.type = "button";
+
+      var letterSpan = document.createElement("span");
+      letterSpan.className = "opt-letter";
+      letterSpan.textContent = letters[idx];
+      btn.appendChild(letterSpan);
+
+      var textSpan = document.createElement("span");
+      textSpan.textContent = opt.text;
+      btn.appendChild(textSpan);
+
+      btn.addEventListener("click", function(){
+        Array.prototype.forEach.call(qOptions.children, function(el){
+          el.classList.remove("selected");
+        });
+        btn.classList.add("selected");
+        setTimeout(function(){
+          state.typeAnswers.push(opt.type);
+          nextQuestion();
+        }, 260);
+      });
+
+      qOptions.appendChild(btn);
+    });
+
+    updateProgress(2 + currentQuestionIdx);
+  }
+
+  function nextQuestion(){
+    currentQuestionIdx++;
+    if(currentQuestionIdx < questions.length){
+      renderQuestion();
+    } else {
+      showResult();
+    }
+  }
+
+  // ---------- Result ----------
+  function computeResultType(){
+    var counts = { content: 0, research: 0, relation: 0, strategy: 0 };
+    state.typeAnswers.forEach(function(t){ counts[t]++; });
+
+    var best = typeOrder[0];
+    var bestCount = -1;
+    typeOrder.forEach(function(t){
+      if(counts[t] > bestCount){
+        bestCount = counts[t];
+        best = t;
+      }
+    });
+    return best;
+  }
+
+  function showResult(){
+    var startupPct = trackSteps[state.trackIndex].startupPct;
+    var jobPct = 100 - startupPct;
+    var typeKey = computeResultType();
+    var meta = typeMeta[typeKey];
+
+    document.getElementById("resultTrack").textContent = "창업 성향 " + startupPct + "%";
+    document.getElementById("resultTypeName").textContent =
+      "창업 성향 " + startupPct + "% × " + meta.name;
+    document.getElementById("resultEmoji").textContent = meta.emoji;
+    document.getElementById("resultCardType").textContent = meta.label;
+    document.getElementById("resultDesc").textContent = meta.desc;
+
+    var strengthsEl = document.getElementById("resultStrengths");
+    strengthsEl.innerHTML = "";
+    meta.strengths.forEach(function(s){
+      var li = document.createElement("li");
+      var chk = document.createElement("span");
+      chk.className = "chk";
+      chk.textContent = "✓";
+      li.appendChild(chk);
+      var txt = document.createElement("span");
+      txt.textContent = s;
+      li.appendChild(txt);
+      strengthsEl.appendChild(li);
+    });
+
+    document.getElementById("resultTip").innerHTML = meta.tip;
+
+    document.getElementById("barStartup").style.width = startupPct + "%";
+    document.getElementById("barJob").style.width = jobPct + "%";
+    document.getElementById("pctStartup").textContent = startupPct + "%";
+    document.getElementById("pctJob").textContent = jobPct + "%";
+
+    showScreen("result");
+    updateProgress(-1);
+  }
+
+  document.getElementById("restartBtn").addEventListener("click", function(){
+    state.step = 0;
+    state.trackIndex = null;
+    state.typeAnswers = [];
+    currentQuestionIdx = 0;
+    showScreen("intro");
+    updateProgress(-1);
+  });
+
+})();
+</script>
+</body>
+</html>
