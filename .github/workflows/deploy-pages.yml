@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["claude/ai-workstyle-check-app-qxn9ui"]
+    branches: ["claude/ai-workstyle-check-app-qxn9ui", "claude/typhoon-lab-webapp-15nscl"]
   workflow_dispatch:
 
 permissions:

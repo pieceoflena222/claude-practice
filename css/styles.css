@@ -1,0 +1,1196 @@
+/* ==========================================================================
+   태풍 실험실 — 디자인 토큰 & 전역 스타일
+   해양대기 관측소 콘솔 컨셉: 위성관측 스테이지 + 계기판 형태의 제어반
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Gothic+A1:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+/* ---------- 토큰: 라이트(주간 관측) 기본값 ---------- */
+:root {
+  --ink: #0b2540;
+  --ink-soft: #45607a;
+  --ink-faint: #7891a4;
+  --bg: #eef5f4;
+  --surface: #ffffff;
+  --surface-2: #e3eeec;
+  --surface-3: #d6e5e2;
+  --border: #c6d8d5;
+  --border-strong: #a9c2be;
+
+  --current: #0e8f88;
+  --current-strong: #0a6f6a;
+  --current-tint: #d6f0ee;
+
+  --squall: #e05a3a;
+  --squall-strong: #c8461f;
+  --squall-tint: #fbe4dc;
+
+  --signal: #2f6fb0;
+  --signal-tint: #dbe9f6;
+
+  --good: #2f8f5b;
+  --good-tint: #dcf1e4;
+
+  --shadow-1: 0 1px 2px rgba(11, 37, 64, 0.06), 0 1px 1px rgba(11, 37, 64, 0.04);
+  --shadow-2: 0 8px 24px rgba(11, 37, 64, 0.12);
+  --shadow-panel: 0 20px 48px rgba(11, 37, 64, 0.16);
+
+  --font-display: 'Do Hyeon', 'Gothic A1', sans-serif;
+  --font-heading: 'Gothic A1', sans-serif;
+  --font-body: 'Gothic A1', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --radius-s: 8px;
+  --radius-m: 14px;
+  --radius-l: 22px;
+
+  color-scheme: light;
+}
+
+/* ---------- 토큰: 시스템 다크(야간 관측) — 명시적 선택이 없을 때만 ---------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --ink: #e9f3f1;
+    --ink-soft: #a9c3c0;
+    --ink-faint: #7896a0;
+    --bg: #071722;
+    --surface: #0e2635;
+    --surface-2: #123243;
+    --surface-3: #164054;
+    --border: #1d4457;
+    --border-strong: #2c5b70;
+
+    --current: #35d6ca;
+    --current-strong: #6fe9e0;
+    --current-tint: #103a3c;
+
+    --squall: #ff7e5a;
+    --squall-strong: #ffa484;
+    --squall-tint: #3a2118;
+
+    --signal: #6ea8e6;
+    --signal-tint: #142c42;
+
+    --good: #58c98a;
+    --good-tint: #103524;
+
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.45);
+    --shadow-panel: 0 24px 60px rgba(0, 0, 0, 0.55);
+
+    color-scheme: dark;
+  }
+}
+
+/* ---------- 토큰: 사용자가 명시적으로 고른 야간 모드 ---------- */
+:root[data-theme='dark'] {
+  --ink: #e9f3f1;
+  --ink-soft: #a9c3c0;
+  --ink-faint: #7896a0;
+  --bg: #071722;
+  --surface: #0e2635;
+  --surface-2: #123243;
+  --surface-3: #164054;
+  --border: #1d4457;
+  --border-strong: #2c5b70;
+
+  --current: #35d6ca;
+  --current-strong: #6fe9e0;
+  --current-tint: #103a3c;
+
+  --squall: #ff7e5a;
+  --squall-strong: #ffa484;
+  --squall-tint: #3a2118;
+
+  --signal: #6ea8e6;
+  --signal-tint: #142c42;
+
+  --good: #58c98a;
+  --good-tint: #103524;
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-panel: 0 24px 60px rgba(0, 0, 0, 0.55);
+
+  color-scheme: dark;
+}
+
+/* ==========================================================================
+   리셋 & 기본 타이포그래피
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+img,
+svg,
+canvas {
+  max-width: 100%;
+  display: block;
+}
+
+button,
+input {
+  font-family: inherit;
+  color: inherit;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  background: var(--current);
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-s);
+  z-index: 200;
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+:focus-visible {
+  outline: 3px solid var(--signal);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================================
+   레이아웃 뼈대
+   ========================================================================== */
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem clamp(1rem, 3vw, 2.5rem);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-1);
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.brand-mark {
+  font-size: 1.4rem;
+  color: var(--current);
+  line-height: 1;
+}
+
+.brand-name {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.brand-sub {
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  border-left: 1px solid var(--border-strong);
+  padding-left: 0.55rem;
+  white-space: nowrap;
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .brand-sub {
+    display: inline;
+  }
+}
+
+.topnav {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--surface-2);
+  padding: 0.25rem;
+  border-radius: 999px;
+}
+
+.nav-link {
+  border: none;
+  background: transparent;
+  color: var(--ink-soft);
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.nav-link:hover {
+  color: var(--ink);
+}
+
+.nav-link.is-active {
+  background: var(--current);
+  color: #fff;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--ink-soft);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease, color 0.15s ease;
+}
+
+.icon-btn:hover {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+.icon-btn:active {
+  transform: scale(0.94);
+}
+
+.icon-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+#authArea {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.35rem 0.5rem 0.35rem 0.9rem;
+}
+
+.user-chip .avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--current);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+}
+
+.user-chip .username {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink);
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+main#main {
+  flex: 1;
+  padding: clamp(1rem, 3vw, 2rem) clamp(1rem, 4vw, 2.5rem) 3rem;
+  max-width: 1180px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.view[hidden] {
+  display: none !important;
+}
+
+.view {
+  animation: view-in 0.28s ease;
+}
+
+@keyframes view-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   버튼
+   ========================================================================== */
+
+.btn {
+  appearance: none;
+  border: none;
+  border-radius: var(--radius-m);
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.8rem 1.35rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: transform 0.12s ease, box-shadow 0.15s ease, background-color 0.15s ease,
+    opacity 0.15s ease;
+  min-height: 46px;
+}
+
+.btn-primary {
+  background: var(--current);
+  color: #fff;
+  box-shadow: var(--shadow-1);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--current-strong);
+  box-shadow: var(--shadow-2);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(1px) scale(0.99);
+}
+
+.btn-secondary {
+  background: var(--surface-2);
+  color: var(--ink);
+  border: 1px solid var(--border-strong);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--surface-3);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--current-strong);
+  padding: 0.55rem 0.75rem;
+  min-height: auto;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.btn-danger {
+  background: transparent;
+  color: var(--squall-strong);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--squall-tint);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 2.5px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  animation: spin 0.7s linear infinite;
+}
+
+.spinner.dark {
+  border-color: var(--border-strong);
+  border-top-color: var(--current);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==========================================================================
+   실험실(콘솔) 화면
+   ========================================================================== */
+
+.console-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .console-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stage-panel {
+  background: linear-gradient(180deg, #06111c, #0a1f30);
+  border-radius: var(--radius-l);
+  padding: 1.1rem 1.1rem 1.4rem;
+  box-shadow: var(--shadow-panel);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.stage-frame {
+  position: relative;
+  border-radius: var(--radius-m);
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: radial-gradient(circle at 50% 42%, #0e2c40, #050f18 78%);
+}
+
+#stage {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.stage-frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.035) 0px,
+    rgba(255, 255, 255, 0.035) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: overlay;
+}
+
+.stage-status {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.status-badge {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: #06111c;
+  background: #dfe9e8;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.status-note {
+  color: #b9cdd6;
+  font-size: 0.85rem;
+}
+
+.stage-legend {
+  margin-top: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #93aab5;
+  font-size: 0.72rem;
+}
+
+.legend-bar {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #274a63 0%, #3fa9c9 30%, #f4f1c9 55%, #f2a341 75%, #e2432c 100%);
+}
+
+/* ---------- 제어반 ---------- */
+
+.control-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.control-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-l);
+  padding: 1.1rem 1.2rem;
+  box-shadow: var(--shadow-1);
+}
+
+.block-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.7rem;
+  display: block;
+}
+
+.sst-control {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.2rem;
+  align-items: center;
+}
+
+.thermometer {
+  position: relative;
+  width: 64px;
+  height: 220px;
+  margin: 0 auto;
+}
+
+.therm-scale {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: linear-gradient(
+    to top,
+    #2f6fb0 0%,
+    #3fa9c9 22%,
+    #7ecf9a 42%,
+    #f4e07a 58%,
+    #f2a341 75%,
+    #e05a3a 100%
+  );
+  width: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: inset 0 0 0 3px var(--surface), 0 0 0 1px var(--border);
+}
+
+.therm-range {
+  -webkit-appearance: none;
+  appearance: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 220px;
+  height: 44px;
+  margin: -22px 0 0 -110px;
+  background: transparent;
+  transform: rotate(-90deg);
+  cursor: grab;
+}
+
+.therm-range:active {
+  cursor: grabbing;
+}
+
+.therm-range::-webkit-slider-runnable-track {
+  height: 44px;
+  background: transparent;
+}
+
+.therm-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 4px solid var(--current);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+  margin-top: 5px;
+  cursor: grab;
+  transition: border-color 0.2s ease;
+}
+
+.therm-range::-moz-range-track {
+  height: 44px;
+  background: transparent;
+}
+
+.therm-range::-moz-range-thumb {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 4px solid var(--current);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+  cursor: grab;
+}
+
+.sst-readout {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.sst-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 2.6rem;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.sst-value span {
+  font-size: 1.2rem;
+  color: var(--ink-faint);
+  margin-left: 0.2rem;
+}
+
+.sst-caption {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.sst-scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  margin-top: 0.4rem;
+  font-family: var(--font-mono);
+}
+
+.gauge-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem;
+  margin: 0;
+}
+
+.gauge {
+  background: var(--surface-2);
+  border-radius: var(--radius-m);
+  padding: 0.75rem 0.6rem;
+  text-align: center;
+}
+
+.gauge dt {
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  margin-bottom: 0.35rem;
+}
+
+.gauge dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.chart-block svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.chart-caption {
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  margin-top: 0.5rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.actions .btn {
+  flex: 1 1 140px;
+}
+
+.run-result {
+  border-top: 1px dashed var(--border-strong);
+  margin-top: 0.2rem;
+  padding-top: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.run-result[hidden] {
+  display: none;
+}
+
+.run-result-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.run-result-detail {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.delta {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.delta.up {
+  color: var(--squall-strong);
+}
+
+.delta.down {
+  color: var(--signal);
+}
+
+/* ==========================================================================
+   관측 기록 화면
+   ========================================================================== */
+
+.records-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.4rem;
+}
+
+.records-header h1 {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+}
+
+.records-header p {
+  color: var(--ink-soft);
+}
+
+.state-block {
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-l);
+  padding: 2.4rem 1.5rem;
+  text-align: center;
+  color: var(--ink-soft);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.state-block[hidden] {
+  display: none;
+}
+
+.state-icon {
+  font-size: 2rem;
+}
+
+.state-block.is-error {
+  border-color: var(--squall);
+  color: var(--squall-strong);
+  background: var(--squall-tint);
+}
+
+.records-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.record-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  padding: 1rem 1.1rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  .record-item {
+    grid-template-columns: auto 1fr;
+  }
+  .record-item .record-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+.record-index {
+  font-family: var(--font-mono);
+  color: var(--ink-faint);
+  font-size: 0.85rem;
+  width: 28px;
+}
+
+.record-main {
+  min-width: 0;
+}
+
+.record-top {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.3rem;
+}
+
+.record-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.record-time {
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+}
+
+.record-metrics {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.record-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+/* ==========================================================================
+   인증 모달
+   ========================================================================== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 17, 28, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 100;
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius-l);
+  padding: 1.8rem;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: var(--shadow-panel);
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: none;
+  background: var(--surface-2);
+  color: var(--ink-soft);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  background: var(--surface-3);
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 0.3rem;
+  background: var(--surface-2);
+  padding: 0.25rem;
+  border-radius: 999px;
+  margin-bottom: 1.2rem;
+}
+
+.auth-tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.55rem;
+  border-radius: 999px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.auth-tab.active {
+  background: var(--current);
+  color: #fff;
+}
+
+.modal h2 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+#authForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+#authForm label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  margin-bottom: 0.35rem;
+  display: block;
+}
+
+#authForm input {
+  width: 100%;
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  border-radius: var(--radius-s);
+  padding: 0.75rem 0.85rem;
+  font-size: 0.95rem;
+  min-height: 46px;
+}
+
+#authForm input:focus {
+  border-color: var(--current);
+}
+
+.field-hint {
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  margin-top: 0.3rem;
+}
+
+.field-error {
+  background: var(--squall-tint);
+  color: var(--squall-strong);
+  border-radius: var(--radius-s);
+  padding: 0.6rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+.field-error[hidden] {
+  display: none;
+}
+
+.auth-hint {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin-top: 1.1rem;
+}
+
+.auth-hint button {
+  border: none;
+  background: none;
+  color: var(--current-strong);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+
+.auth-hint button:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   토스트
+   ========================================================================== */
+
+#toastRegion {
+  position: fixed;
+  bottom: 1.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 200;
+  width: min(92vw, 380px);
+}
+
+.toast {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 0.8rem 1rem;
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-2);
+  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  animation: toast-in 0.2s ease;
+}
+
+.toast.is-success {
+  background: var(--good);
+  color: #06231a;
+}
+
+.toast.is-error {
+  background: var(--squall);
+  color: #2b0d05;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   모바일 조정
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  .topbar {
+    padding: 0.7rem 1rem;
+    flex-wrap: wrap;
+    row-gap: 0.6rem;
+  }
+
+  .brand-name {
+    font-size: 1.05rem;
+  }
+
+  .topnav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .nav-link {
+    padding: 0.45rem 0.7rem;
+    font-size: 0.82rem;
+    flex: 1;
+    text-align: center;
+  }
+
+  .sst-control {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .gauge-list {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .gauge {
+    padding: 0.6rem 0.35rem;
+  }
+
+  .gauge dd {
+    font-size: 0.95rem;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions .btn {
+    flex: 1 1 auto;
+  }
+}
