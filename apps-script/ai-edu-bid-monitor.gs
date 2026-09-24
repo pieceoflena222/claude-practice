@@ -1,63 +1,64 @@
 /**
  * ============================================================
- *  AI 교육 공공입찰 모니터링 봇  (Google Apps Script)
+ *  AI 교육 공공입찰 알림 봇  (Google Apps Script)
  * ------------------------------------------------------------
- *  대상: AI 교육을 하는 개인사업자(1인 강사·소규모 교육기업)
+ *  나라장터에 새로 올라온 용역 공고 중
+ *  "AI·디지털 주제의 교육·강의" 공고만 골라 매일 메일로 알려 줍니다.
+ *  1인 강사·소규모 교육사업자가 참여할 만한 규모(1억 원 이하)만 보냅니다.
  *
- *  하는 일:
- *   나라장터 용역 입찰공고 조회
- *   → "AI·디지털 주제" + "교육·강의 형태"가 함께 있는 공고만 선별
- *   → 개인사업자가 참여하기 어려운 대형 사업은 금액 기준으로 제외
- *   → 이미 본 공고는 제외
- *   → 새 공고만 이메일로 알림
+ *  ▶ 처음 쓰는 분은 아래 [필수 입력] 두 곳만 바꾸면 됩니다.
+ *    ① 27번째 줄: 공공데이터포털 인증키
+ *    ② 32번째 줄: 알림 받을 이메일
  *
- *  운영 원칙:
- *   - 트리거에는 checkNewBids 함수만 연결
- *   - resetSeenForTest는 테스트할 때만 수동 실행
- *   - forceSendLatestMatchedForTest는 시연용 강제 발송
+ *  ▶ 실행 순서
+ *    1) 저장 → 함수 목록에서 debugFilteredBids 선택 → 실행 (권한 허용)
+ *    2) 왼쪽 ⏰ 트리거 → checkNewBids / 시간 기반 / 일 단위 타이머
  * ============================================================
  */
 
 
 // ===========================================================
-//  ① 여기만 내 상황에 맞게 수정
+//  ★★★ [필수 입력] 아래 두 줄만 바꾸세요 ★★★
 // ===========================================================
 
-// 공공데이터포털에서 받은 '인코딩 인증키'를 붙여넣으세요.
-// ※ 인증키가 들어간 코드는 GitHub 등 공개된 곳에 올리지 마세요.
-const SERVICE_KEY = '여기에_인코딩_인증키를_붙여넣으세요';
+// ① 공공데이터포털(data.go.kr)에서 받은 '일반 인증키(Encoding)'를
+//    따옴표 안의 글자를 지우고 그 자리에 붙여넣으세요.  (따옴표 ' ' 는 지우지 마세요)
+//    예) const SERVICE_KEY = 'abcd1234%2B...%3D%3D';
+const SERVICE_KEY = '여기에_인증키를_넣으세요';
 
-// 나라장터 입찰공고정보서비스 - 용역조회
-const API_URL = 'https://apis.data.go.kr/1230000/ad/BidPublicInfoService/getBidPblancListInfoServc';
+// ② 알림 받을 이메일 주소를 따옴표 안에 넣으세요.
+//    예) const NOTIFY_EMAIL = 'teacher@gmail.com';
+//    바꾸지 않으면 이 스크립트를 실행한 구글 계정 메일로 보냅니다.
+const NOTIFY_EMAIL = '여기에_이메일을_넣으세요';
 
-// 알림 받을 이메일 (비워 두면 스크립트를 실행한 구글 계정으로 발송)
-const NOTIFY_EMAIL = '';
 
-// 최근 며칠 치를 조회할지
-const LOOKBACK_DAYS = 1;
+// ===========================================================
+//  [선택 설정] 필요할 때만 바꾸세요 (그대로 둬도 됩니다)
+// ===========================================================
+
+// 최근 며칠 치 공고를 볼지 (매일 실행 기준 2 권장, 이미 보낸 공고는 다시 안 보냄)
+const LOOKBACK_DAYS = 2;
+
+// 관련성 기준 점수 — 관련 없는 공고가 많으면 10으로 올리고, 너무 안 오면 6으로 낮추세요.
+const MIN_RELEVANCE_SCORE = 8;
+
+// 이 금액(원)을 넘는 사업은 제외합니다. 0으로 두면 금액 제한 없음.
+const MAX_BUDGET_KRW = 100000000;   // 1억 원
+
+// 이 금액 이하 소규모 사업은 가점 (1인 견적·소액수의 가능성이 높은 구간)
+const SMALL_BUDGET_KRW = 50000000;  // 5천만 원
+
+// 특정 지역 공고만 받고 싶으면 예: ['서울', '경기'] 처럼 넣으세요. 비워 두면 전국.
+const REGIONS = [];
 
 // 메일 본문에 표시할 최대 공고 수
 const MAX_EMAIL_ITEMS = 30;
 
-// 평소 false 권장. true면 새 공고가 0건이어도 상태 메일이 옵니다.
+// true로 바꾸면 새 공고가 0건인 날에도 "새 공고 없음" 메일이 옵니다.
 const SEND_ZERO_RESULT_EMAIL_FOR_TEST = false;
 
-// 필터 기준 점수
-// 관련 없는 공고가 많으면 10으로 올리고, 너무 안 잡히면 6으로 낮추세요.
-const MIN_RELEVANCE_SCORE = 8;
-
-// 개인사업자가 현실적으로 참여 가능한 사업 규모 (원, 추정가격 기준)
-// - 이 금액을 넘는 공고는 제외합니다. 0으로 두면 금액 제한 없음.
-// - 금액 정보가 없는 공고는 제외하지 않습니다.
-const MAX_BUDGET_KRW = 100000000;   // 1억 원
-
-// 이 금액 이하인 소규모 사업은 가점 (1인 견적·소액수의 가능성이 높은 구간)
-const SMALL_BUDGET_KRW = 50000000;  // 5천만 원
-
-// 지역 제한은 기본적으로 쓰지 않습니다.
-// 소액 공고는 '사업장 소재지'로 참가를 제한하는 경우가 많으니,
-// 특정 지역만 보고 싶으면 예: ['서울', '경기'] 처럼 넣으세요.
-const REGIONS = [];
+// 나라장터 입찰공고정보서비스 - 용역조회 주소 (바꾸지 마세요)
+const API_URL = 'https://apis.data.go.kr/1230000/ad/BidPublicInfoService/getBidPblancListInfoServc';
 
 
 // ===========================================================
@@ -178,7 +179,25 @@ function checkNewBids() {
 
 
 function getNotifyEmail_() {
-  return NOTIFY_EMAIL || Session.getEffectiveUser().getEmail();
+  var email = String(NOTIFY_EMAIL || '').trim();
+
+  if (!email || email.indexOf('@') === -1) {
+    return Session.getEffectiveUser().getEmail();
+  }
+
+  return email;
+}
+
+
+function checkServiceKey_() {
+  var key = String(SERVICE_KEY || '').trim();
+
+  if (!key || key.indexOf('여기에') !== -1) {
+    throw new Error(
+      '인증키가 입력되지 않았습니다. 코드 위쪽 [필수 입력] ①의 SERVICE_KEY에 ' +
+      '공공데이터포털에서 받은 일반 인증키(Encoding)를 넣고 저장한 뒤 다시 실행하세요.'
+    );
+  }
 }
 
 
@@ -223,6 +242,8 @@ function testEmail() {
 // ===========================================================
 
 function fetchBids_() {
+  checkServiceKey_();
+
   var tz = 'Asia/Seoul';
   var now = new Date();
   var from = new Date(now.getTime() - LOOKBACK_DAYS * 24 * 60 * 60 * 1000);
@@ -618,7 +639,7 @@ function sendEmail_(items) {
     subject: subject,
     body: plainText,
     htmlBody: html,
-    name: 'AI 교육 입찰 모니터링 봇'
+    name: 'AI 교육 입찰 알림 봇'
   });
 
   Logger.log('이메일 발송 완료: ' + to + ' / 공고 ' + items.length + '건');
@@ -634,7 +655,7 @@ function sendStatusEmail_(subject, body) {
     to: to,
     subject: subject,
     body: body,
-    name: 'AI 교육 입찰 모니터링 봇'
+    name: 'AI 교육 입찰 알림 봇'
   });
 
   Logger.log('상태 메일 발송 완료: ' + to);
@@ -643,7 +664,6 @@ function sendStatusEmail_(subject, body) {
 
 // ===========================================================
 //  ⑨ 중복 체크용 스프레드시트
-//  (기존 방산·ICT 봇과 기록이 섞이지 않도록 별도 시트를 씁니다)
 // ===========================================================
 
 var SEEN_SHEET_PROP_ = 'SEEN_SHEET_ID_AI_EDU';
@@ -661,7 +681,7 @@ function getSeenSheet_() {
     }
   }
 
-  var ss = SpreadsheetApp.create('AI교육_공공입찰_모니터링_기록');
+  var ss = SpreadsheetApp.create('AI교육_공공입찰_알림_기록');
   props.setProperty(SEEN_SHEET_PROP_, ss.getId());
 
   var sheet = ss.getSheets()[0];
