@@ -505,8 +505,8 @@ function syncColumns_(ss) {
 function doGet() {
   return HtmlService.createHtmlOutputFromFile('Index')
     .setTitle(APP.name)
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover')
-    .addMetaTag('theme-color', APP.colors.navy);
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover');
+  // ※ addMetaTag 는 viewport 등 일부 태그만 허용됨 (theme-color 는 오류)
 }
 
 // ---- PIN ----
